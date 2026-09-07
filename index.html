@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gari koi</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Poppins:wght@400;500;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --purple: #4b3b68;
+      --light-purple: #625078;
+      --pink: #f58b98;
+      --green: #b9dcae;
+      --yellow: #e9dfa5;
+      --blue: #9bcbd3;
+      --cream: #f5f0d8;
+      --line: #dedce2;
+      --text: #292733;
+      --muted: #77747f;
+      --bg: #f4f0e1;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+    }
+
+    .app {
+      width: min(100%, 450px);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .side-tabs {
+      position: absolute;
+      right: 0;
+      top: 0px;
+      bottom: 0px;
+      width: 29px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .tab {
+      flex: 1;
+      min-height: 0;
+      width: 34px;
+      border: none;
+      cursor: pointer;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      color: #3d3745;
+      border-radius: 7px 0 0 7px;
+      transition: .2s ease;
+    }
+
+    .tab:hover {
+      width: 37px;
+    }
+
+    .tab.active {
+      width: 29px;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, .08);
+    }
+
+    .tab.driverid {
+      background: #eee7d3;
+    }
+
+    .tab.drivername {
+      background: var(--pink);
+    }
+
+    .tab.verify {
+      background: var(--blue);
+    }
+
+    #app1 .tab {
+      font-size: 11.5px;
+    }
+
+    .content {
+      min-height: 100vh;
+      padding: 55px 48px 85px 22px;
+    }
+
+    .header-line {
+      height: 1px;
+      background: #d6d2d8;
+      margin: 10px 0 9px;
+    }
+
+    .tab-type-box {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      width: 325px;
+      height: 48px;
+      padding: 0 6px 0 14px;
+      background: #fff;
+      border: 2px solid var(--purple);
+      border-radius: 999px;
+      box-shadow: 0 3px 10px rgba(41, 39, 51, .14);
+      opacity: 0;
+      transform: translateX(6px) scale(.96);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease, border-color .18s ease;
+      z-index: 30;
+    }
+
+    .tab-type-box.show {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .tab-type-box input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    .tab-type-box input::placeholder {
+      color: var(--muted);
+    }
+
+    .tab-verify-btn {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: var(--green);
+      color: #2c4423;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-verify-btn:hover {
+      filter: brightness(0.96);
+    }
+
+    .verify-toast {
+      position: absolute;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(16px);
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+      transition: opacity .22s ease, transform .22s ease;
+      z-index: 60;
+    }
+
+    .verify-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .verify-toast.granted {
+      background: #4c9a5f;
+    }
+
+    .verify-toast.denied {
+      background: #d9576a;
+    }
+
+    .verify-toast.checking {
+      background: var(--light-purple);
+    }
+
+    @media (max-width: 500px) {
+      .app {
+        width: 100%;
+      }
+
+      .content {
+        padding-right: 45px;
+        padding-left: 18px;
+      }
+
+      .side-tabs {
+        top: 28px;
+      }
+
+      #app1 .side-tabs, #app2 .side-tabs, #app3 .side-tabs {
+        top: 3px;
+      }
+    }
+
+    @media (min-width: 501px) {
+      body {
+        display: flex;
+        justify-content: center;
+      }
+
+      .app {
+        min-height: 100vh;
+      }
+    }
+
+    #app2 .tab {
+      font-size: 11.5px;
+    }
+
+    #app2 .tab.date {
+      background: #eee7d3;
+    }
+
+    #app2 .tab.trainname {
+      background: var(--pink);
+    }
+
+    #app2 .tab.trainnumber {
+      background: var(--blue);
+    }
+
+    #app2 .tab.continue {
+      background: var(--yellow);
+    }
+
+    #app3 .tab {
+      font-size: 11.5px;
+    }
+
+    #app3 .tab.from {
+      background: #eee7d3;
+    }
+
+    #app3 .tab.to {
+      background: var(--pink);
+    }
+
+    #app3 .tab.depart {
+      background: var(--blue);
+    }
+
+    #app3 .tab.continue3 {
+      background: var(--yellow);
+    }
+
+    #app3 .tab.continue3.done {
+      background: var(--green);
+      cursor: default;
+    }
+
+    .tab-view-box {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      min-width: 345px;
+      max-width: 345px;
+      height: 48px;
+      padding: 0 20px;
+      background: #fff;
+      border: 2px solid var(--purple);
+      border-radius: 999px;
+      box-shadow: 0 3px 10px rgba(41, 39, 51, .14);
+      opacity: 0;
+      transform: translateX(6px) scale(.96);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease, border-color .18s ease;
+      z-index: 30;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .tab-view-box.show {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* ===== Page 4: journey map + HUD ===== */
+    #app4 {
+      display: none; /* switched to flex by JS when this screen opens */
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #map4 {
+      flex: 3; /* map takes 75% of the page */
+      width: 100%;
+    }
+
+    /* small shadow under the route lines, matching the rounded-shadow look used elsewhere in the app */
+    #map4 .leaflet-overlay-pane svg {
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+    }
+
+    #hud4 {
+      flex: 1; /* HUD takes the remaining 25% */
+      width: 100%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 10px;
+      padding: 0 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* same look as the always-open typing/view bars on the other pages: white pill, purple border, soft shadow */
+    #hud4 .hud-item {
+      flex: 1;
+      min-width: 0;
+      height: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 2px solid var(--purple);
+      border-radius: 999px;
+      box-shadow: 0 3px 10px rgba(41, 39, 51, .14);
+      padding: 4px 10px;
+    }
+
+    #hud4 .hud-label {
+      display: block;
+      font-size: 9.5px;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    #hud4 .hud-value {
+      display: block;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.15;
+      overflow-wrap: break-word;
+      text-align: center;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <div class="app" id="app1">
+    <!-- LEFT TABS -->
+    <nav class="side-tabs">
+      <button class="tab driverid active" data-page="driverid">
+        Driver ID
+      </button>
+      <button class="tab drivername" data-page="drivername">
+        Driver Name
+      </button>
+      <button class="tab verify" data-page="verify">
+        Verify
+      </button>
+    </nav>
+
+    <div class="tab-type-box" id="tabTypeBox">
+      <input type="text" id="tabTypeInput" placeholder="Type here...">
+      <button class="tab-verify-btn" id="tabVerifyBtn" title="Save">✓</button>
+    </div>
+
+    <div class="verify-toast" id="verifyToast"></div>
+  </div>
+
+  <div class="app" id="app2" style="display:none;">
+    <!-- LEFT TABS -->
+    <nav class="side-tabs">
+      <button class="tab date active" data-page="date">
+        Date
+      </button>
+      <button class="tab trainname" data-page="trainname">
+        Train Name
+      </button>
+      <button class="tab trainnumber" data-page="trainnumber">
+        Train Number
+      </button>
+      <button class="tab continue" data-page="continue">
+        Continue
+      </button>
+    </nav>
+
+    <!-- FLOATING TYPING BOX (shown next to Date / Train Name / Train Number tabs) -->
+    <div class="tab-type-box" id="tabTypeBox2">
+      <input type="text" id="tabTypeInput2" placeholder="Type here...">
+      <button class="tab-verify-btn" id="tabVerifyBtn2" title="Save">✓</button>
+    </div>
+
+    <!-- popup used for "Train found" / "No matching train" -->
+    <div class="verify-toast" id="trainCheckToast"></div>
+  </div>
+
+  <div class="app" id="app3" style="display:none;">
+    <!-- LEFT TABS -->
+    <nav class="side-tabs">
+      <button class="tab from active" data-page="from">
+        From
+      </button>
+      <button class="tab to" data-page="to">
+        To
+      </button>
+      <button class="tab depart" data-page="depart">
+        Departure
+      </button>
+      <button class="tab continue3" data-page="continue3">
+        Continue
+      </button>
+    </nav>
+
+    <!-- READ-ONLY VIEW BOXES (always visible next to From / To / Departure tabs — no typing, values come from train_info) -->
+    <div class="tab-view-box show" id="tabViewBoxFrom">
+      <span id="tabViewTextFrom"></span>
+    </div>
+    <div class="tab-view-box show" id="tabViewBoxTo">
+      <span id="tabViewTextTo"></span>
+    </div>
+    <div class="tab-view-box show" id="tabViewBoxDepart">
+      <span id="tabViewTextDepart"></span>
+    </div>
+
+    <!-- popup used for "QR activated" / "Activation failed" -->
+    <div class="verify-toast" id="activateToast"></div>
+  </div>
+
+  <div class="app" id="app4" style="display:none;">
+    <!-- MAP: shows From/To points and the route, colored by how much has been covered -->
+    <div id="map4"></div>
+
+    <!-- BOTTOM HUD: current position name, speed, next major place -->
+    <div id="hud4">
+      <div class="hud-item">
+        <span class="hud-label">Position</span>
+        <span class="hud-value" id="vehiclePosName">Locating…</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Speed</span>
+        <span class="hud-value" id="vehicleSpeed">0 km/h</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Next Place</span>
+        <span class="hud-value" id="nextPlace">—</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const SUPABASE_URL = "https://vgqoprymztrjxuhxffee.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZncW9wcnltenRyanh1aHhmZmVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MTAzODYsImV4cCI6MjEwNDE4NjM4Nn0.iBJThP8ztHTz6hzlJI5FaJnXC_WevTNz_THryg_i3Lw";
+
+    const supabaseClient = (SUPABASE_URL.startsWith("http"))
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    async function checkDriverInSupabase(driverId, driverName) {
+      if (!supabaseClient) {
+        alert("Supabase isn't configured yet — fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script.");
+        return false;
+      }
+      try {
+        const { data, error } = await supabaseClient
+          .from("drivers")
+          .select("driver_id, driver_name")
+          .eq("driver_id", driverId)
+          .ilike("driver_name", driverName)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase error:", error);
+          return false;
+        }
+        return !!data;
+      } catch (err) {
+        console.error("Supabase request failed:", err);
+        return false;
+      }
+    }
+    async function findTrainInfo(travelDate, trainName, trainNumber) {
+      if (!supabaseClient) {
+        alert("Supabase isn't configured yet — fill in SUPABASE_URL and SUPABASE_ANON_KEY at the top of the script.");
+        return null;
+      }
+      try {
+        const { data, error } = await supabaseClient
+          .from("train_info")
+          .select("id, train_name, train_number, from_station, to_station, departure_time, travel_date, is_active")
+          .eq("travel_date", travelDate)
+          .eq("train_number", trainNumber)
+          .ilike("train_name", trainName)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase error:", error);
+          return null;
+        }
+        return data;
+      } catch (err) {
+        console.error("Supabase request failed:", err);
+        return null;
+      }
+    }
+
+    /* looks up the train's scheduled stopages (station_1..station_15) by matching train_name + train_number */
+    async function findTrainStopages(trainName, trainNumber) {
+      if (!supabaseClient) return null;
+      try {
+        const { data, error } = await supabaseClient
+          .from("train_stopages")
+          .select("station_1, station_2, station_3, station_4, station_5, station_6, station_7, station_8, station_9, station_10, station_11, station_12, station_13, station_14, station_15")
+          .eq("train_number", trainNumber)
+          .ilike("train_name", trainName)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase error:", error);
+          return null;
+        }
+        if (!data) return null;
+
+        // pull station_1..station_15 in order, skipping empty/null ones
+        const ordered = [];
+        for (let i = 1; i <= 15; i++) {
+          const val = data[`station_${i}`];
+          if (val && val.trim()) ordered.push(val.trim());
+        }
+        return ordered.length ? ordered : null;
+      } catch (err) {
+        console.error("Supabase request failed:", err);
+        return null;
+      }
+    }
+
+    async function activateTrainInfo(rowId, driver) {
+      if (!supabaseClient) return false;
+      try {
+        const { error } = await supabaseClient
+          .from("train_info")
+          .update({
+            is_active: true,
+            started_at: new Date().toISOString(),
+            activated_by_driver_id: driver.id,
+            activated_by_driver_name: driver.name
+          })
+          .eq("id", rowId);
+
+        if (error) {
+          console.error("Supabase update error:", error);
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.error("Supabase update failed:", err);
+        return false;
+      }
+    }
+
+    let verifiedDriver = { id: "", name: "" };
+    let matchedTrain = null;
+
+    (function () {
+      const tabs = document.querySelectorAll("#app1 .tab");
+      const pages = document.querySelectorAll("#app1 .page");
+
+      /* Only the top two tabs (Driver ID, Driver Name) get the floating typing box */
+      const TYPING_PAGES = ["driverid", "drivername"];
+
+      const appEl = document.getElementById("app1");
+      const typeBox = document.getElementById("tabTypeBox");
+      const typeInput = document.getElementById("tabTypeInput");
+      const verifyBtn = document.getElementById("tabVerifyBtn");
+
+      /* NEW: the popup element + helper */
+      const verifyToast = document.getElementById("verifyToast");
+      let toastTimer = null;
+
+      function showToast(message, kind) {
+        clearTimeout(toastTimer);
+        verifyToast.textContent = message;
+        verifyToast.className = "verify-toast show " + kind;
+        toastTimer = setTimeout(() => {
+          verifyToast.classList.remove("show");
+        }, 2200);
+      }
+
+      let activeTypingPage = null; // which tab currently owns the open box
+
+      /* NEW: remembers what was saved (via ✓ or Enter) for each field */
+      const savedValues = { driverid: "", drivername: "" };
+
+      function hideTypeBox() {
+        typeBox.classList.remove("show");
+        activeTypingPage = null;
+      }
+
+      function showTypeBoxNear(tabEl) {
+        const appRect = appEl.getBoundingClientRect();
+        const tabRect = tabEl.getBoundingClientRect();
+
+        const top = tabRect.top - appRect.top + (tabRect.height / 2) - (typeBox.offsetHeight / 2);
+        const right = appRect.right - tabRect.left + 10;
+
+        typeBox.style.top = `${top}px`;
+        typeBox.style.right = `${right}px`;
+        /* oval border matches the selected tab's own color */
+        typeBox.style.borderColor = getComputedStyle(tabEl).backgroundColor;
+
+        typeBox.classList.add("show");
+        /* NEW: reopen with whatever was previously saved for this tab */
+        typeInput.value = savedValues[tabEl.dataset.page] || "";
+        typeInput.focus();
+      }
+
+      function goToScreen2() {
+        document.getElementById("app1").style.display = "none";
+        document.getElementById("app2").style.display = "block";
+      }
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const target = tab.dataset.page;
+          if (target === "verify") {
+            const driverId = savedValues.driverid.trim();
+            const driverName = savedValues.drivername.trim();
+
+            if (driverId !== "" && driverName !== "") {
+              hideTypeBox();
+              showToast("Checking...", "checking");
+
+              checkDriverInSupabase(driverId, driverName).then(isMatch => {
+                if (isMatch) {
+                  showToast("Access granted ✓", "granted");
+                  tabs.forEach(t => t.classList.remove("active"));
+                  tab.classList.add("active");
+                  verifiedDriver = { id: driverId, name: driverName };
+                  setTimeout(goToScreen2, 900);
+                } else {
+                  showToast("Access denied ✕", "denied");
+                }
+              });
+            } else {
+              alert("Please fill and save both Driver ID and Driver Name before verifying.");
+            }
+            return;
+          }
+
+          /* remove active */
+          tabs.forEach(t => {
+            t.classList.remove("active");
+          });
+          pages.forEach(page => {
+            page.classList.remove("active");
+          });
+
+          /* activate selected */
+          tab.classList.add("active");
+          const pageEl = document.getElementById(target);
+          if (pageEl) {
+            pageEl.classList.add("active");
+          }
+
+          /* typing oval only for the top two tabs */
+          if (TYPING_PAGES.includes(target)) {
+            if (activeTypingPage === target && typeBox.classList.contains("show")) {
+              /* same tab clicked again -> hide it */
+              hideTypeBox();
+            } else {
+              showTypeBoxNear(tab);
+              activeTypingPage = target;
+            }
+          } else {
+            /* any other tab clicked -> hide the box */
+            hideTypeBox();
+          }
+        });
+      });
+      function saveCurrentField() {
+        if (activeTypingPage) {
+          savedValues[activeTypingPage] = typeInput.value;
+        }
+        hideTypeBox();
+      }
+
+      verifyBtn.addEventListener("click", saveCurrentField);
+      typeInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          saveCurrentField();
+        }
+      });
+
+      document.addEventListener("click", e => {
+        if (e.target.classList.contains("checkbox")) {
+          e.target.classList.toggle("checked");
+        }
+      });
+
+      const addBtn = document.getElementById("addBtn");
+      if (addBtn) {
+        addBtn.addEventListener("click", () => {
+          alert("Add new item");
+        });
+      }
+    })();
+
+    (function () {
+      const tabs = document.querySelectorAll("#app2 .tab");
+
+      /* Only the top three tabs get the floating typing box */
+      const TYPING_PAGES = ["date", "trainname", "trainnumber"];
+      const PLACEHOLDERS = {
+        date: "e.g. 2026-09-10",
+        trainname: "e.g. Padma Express",
+        trainnumber: "e.g. 754"
+      };
+
+      const appEl = document.getElementById("app2");
+      const typeBox = document.getElementById("tabTypeBox2");
+      const typeInput = document.getElementById("tabTypeInput2");
+      const verifyBtn = document.getElementById("tabVerifyBtn2");
+      const trainCheckToast = document.getElementById("trainCheckToast");
+
+      let toastTimer = null;
+      function showToast(message, kind) {
+        clearTimeout(toastTimer);
+        trainCheckToast.textContent = message;
+        trainCheckToast.className = "verify-toast show " + kind;
+        toastTimer = setTimeout(() => trainCheckToast.classList.remove("show"), 2200);
+      }
+
+      let activeTypingPage = null; // which tab currently owns the open box
+
+      /* remembers what was saved (via ✓ or Enter) for each field */
+      const savedValues = { date: "", trainname: "", trainnumber: "" };
+
+      function hideTypeBox() {
+        typeBox.classList.remove("show");
+        activeTypingPage = null;
+      }
+
+      function showTypeBoxNear(tabEl) {
+        const appRect = appEl.getBoundingClientRect();
+        const tabRect = tabEl.getBoundingClientRect();
+
+        const top = tabRect.top - appRect.top + (tabRect.height / 2) - (typeBox.offsetHeight / 2);
+        const right = appRect.right - tabRect.left + 10;
+
+        typeBox.style.top = `${top}px`;
+        typeBox.style.right = `${right}px`;
+        /* oval border matches the selected tab's own color */
+        typeBox.style.borderColor = getComputedStyle(tabEl).backgroundColor;
+
+        typeInput.placeholder = PLACEHOLDERS[tabEl.dataset.page] || "Type here...";
+        typeBox.classList.add("show");
+        /* reopen with whatever was previously saved for this tab */
+        typeInput.value = savedValues[tabEl.dataset.page] || "";
+        typeInput.focus();
+      }
+
+      function goToScreen3() {
+        document.getElementById("app2").style.display = "none";
+        document.getElementById("app3").style.display = "block";
+        if (window.__fillScreen3) window.__fillScreen3();
+      }
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const target = tab.dataset.page;
+
+          if (target === "continue") {
+            const travelDate = savedValues.date.trim();
+            const trainName = savedValues.trainname.trim();
+            const trainNumber = savedValues.trainnumber.trim();
+
+            if (travelDate !== "" && trainName !== "" && trainNumber !== "") {
+              hideTypeBox();
+              showToast("Checking...", "checking");
+
+              findTrainInfo(travelDate, trainName, trainNumber).then(row => {
+                if (row) {
+                  matchedTrain = row;
+                  showToast("Train found ✓", "granted");
+                  tabs.forEach(t => t.classList.remove("active"));
+                  tab.classList.add("active");
+                  setTimeout(goToScreen3, 900);
+                } else {
+                  showToast("No matching train ✕", "denied");
+                }
+              });
+            } else {
+              alert("Please fill and save Date, Train Name and Train Number before continuing.");
+            }
+            return;
+          }
+
+          /* remove active */
+          tabs.forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          /* typing oval only for the top three tabs */
+          if (TYPING_PAGES.includes(target)) {
+            if (activeTypingPage === target && typeBox.classList.contains("show")) {
+              /* same tab clicked again -> hide it */
+              hideTypeBox();
+            } else {
+              showTypeBoxNear(tab);
+              activeTypingPage = target;
+            }
+          } else {
+            /* any other tab clicked -> hide the box */
+            hideTypeBox();
+          }
+        });
+      });
+
+      function saveCurrentField() {
+        if (activeTypingPage) savedValues[activeTypingPage] = typeInput.value;
+        hideTypeBox();
+      }
+
+      verifyBtn.addEventListener("click", saveCurrentField);
+      typeInput.addEventListener("keydown", e => { if (e.key === "Enter") saveCurrentField(); });
+    })();
+
+    (function () {
+      const tabs = document.querySelectorAll("#app3 .tab");
+      const appEl = document.getElementById("app3");
+      const activateToast = document.getElementById("activateToast");
+
+      const READONLY_PAGES = ["from", "to", "depart"];
+      const continueTab = document.querySelector("#app3 .tab.continue3");
+
+      /* NEW: one always-visible box per read-only field, instead of a single shared click-to-show box */
+      const viewBoxes = {
+        from: { box: document.getElementById("tabViewBoxFrom"), text: document.getElementById("tabViewTextFrom") },
+        to: { box: document.getElementById("tabViewBoxTo"), text: document.getElementById("tabViewTextTo") },
+        depart: { box: document.getElementById("tabViewBoxDepart"), text: document.getElementById("tabViewTextDepart") }
+      };
+
+      let toastTimer = null;
+      function showToast(message, kind) {
+        clearTimeout(toastTimer);
+        activateToast.textContent = message;
+        activateToast.className = "verify-toast show " + kind;
+        toastTimer = setTimeout(() => activateToast.classList.remove("show"), 2200);
+      }
+
+      /* positions one box next to its matching tab (same math as before, just per-field now) */
+      function positionViewBox(pageKey) {
+        const tabEl = document.querySelector(`#app3 .tab.${pageKey}`);
+        const entry = viewBoxes[pageKey];
+        if (!tabEl || !entry) return;
+
+        const appRect = appEl.getBoundingClientRect();
+        const tabRect = tabEl.getBoundingClientRect();
+        const box = entry.box;
+
+        const top = tabRect.top - appRect.top + (tabRect.height / 2) - (box.offsetHeight / 2);
+        const right = appRect.right - tabRect.left + 10;
+
+        box.style.top = `${top}px`;
+        box.style.right = `${right}px`;
+        box.style.borderColor = getComputedStyle(tabEl).backgroundColor;
+      }
+
+      function refreshAllViewBoxes() {
+        READONLY_PAGES.forEach(positionViewBox);
+      }
+
+      function fillViewBoxValues() {
+        if (!matchedTrain) return;
+        viewBoxes.from.text.textContent = matchedTrain.from_station || "—";
+        viewBoxes.to.text.textContent = matchedTrain.to_station || "—";
+        viewBoxes.depart.text.textContent = matchedTrain.departure_time || "—";
+      }
+
+      window.__fillScreen3 = function () {
+        continueTab.classList.remove("done");
+        continueTab.textContent = "Continue";
+        tabs.forEach(t => t.classList.remove("active"));
+        document.querySelector("#app3 .tab.from").classList.add("active");
+        fillViewBoxValues();
+        refreshAllViewBoxes();
+      };
+
+      function goToScreen4() {
+        document.getElementById("app3").style.display = "none";
+        document.getElementById("app4").style.display = "flex";
+        if (window.__initScreen4) window.__initScreen4();
+      }
+
+      /* keep the boxes correctly placed if the layout shifts (e.g. resizing the window) */
+      window.addEventListener("resize", refreshAllViewBoxes);
+
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          const target = tab.dataset.page;
+
+          if (target === "continue3") {
+            if (!matchedTrain) {
+              alert("No matched train yet — go back and use Continue on the previous screen first.");
+              return;
+            }
+            if (continueTab.classList.contains("done")) return; // already activated
+
+            showToast("Activating...", "checking");
+
+            activateTrainInfo(matchedTrain.id, verifiedDriver).then(ok => {
+              if (ok) {
+                showToast("QR activated ✓", "granted");
+                continueTab.classList.add("done");
+                continueTab.textContent = "Activated ✓";
+                setTimeout(goToScreen4, 900);
+              } else {
+                showToast("Activation failed ✕", "denied");
+              }
+            });
+            return;
+          }
+
+          tabs.forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          /* the view boxes are already visible with the right values — no toggling needed anymore */
+        });
+      });
+    })();
+
+    (function () {
+      const NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search";
+      const NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
+      const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+
+      /* Bangladesh's rough bounding box — used to keep the map limited to the country */
+      const BD_BOUNDS = L.latLngBounds([[20.3, 87.9], [26.8, 92.8]]);
+
+      const posNameEl = document.getElementById("vehiclePosName");
+      const speedEl = document.getElementById("vehicleSpeed");
+      const nextPlaceEl = document.getElementById("nextPlace");
+
+      let map4 = null;
+      let fromMarker = null, toMarker = null, vehicleMarker = null;
+      let greenLine = null, orangeLine = null, blueLine = null;
+      let routeCoords = []; // [[lat, lng], ...] following the actual railway line from "from" to "to"
+      let watchId4 = null;
+      let stopMarkers = []; // small colored dots for intermediate stopages from train_stopages
+      const STOPAGE_COLORS = ["#eab308", "#a855f7", "#ec4899", "#14b8a6", "#f97316", "#0ea5e9", "#84cc16", "#f43f5e", "#8b5cf6", "#06b6d4", "#facc15", "#fb7185", "#22d3ee"];
+
+      /* looks up a train station name -> {lat, lng}, biased to Bangladesh railway stations */
+      async function geocodePlace(name) {
+        try {
+          const query = `${name} railway station, Bangladesh`;
+          const res = await fetch(`${NOMINATIM_SEARCH_URL}?format=json&limit=1&countrycodes=bd&q=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          if (data && data[0]) {
+            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+          }
+        } catch (err) {
+          console.error("Geocoding failed for", name, err);
+        }
+        return null;
+      }
+
+      /* finds the nearest OSM-tagged railway station to a point (used for "Next Place") */
+      async function findNearestStation(lat, lng, radiusMeters) {
+        try {
+          const query = `[out:json][timeout:15];node(around:${radiusMeters},${lat},${lng})[railway=station];out;`;
+          const res = await fetch(OVERPASS_URL, { method: "POST", body: query });
+          const data = await res.json();
+          if (data && data.elements && data.elements.length) {
+            let best = null, bestDist = Infinity;
+            data.elements.forEach(el => {
+              const d = (el.lat - lat) ** 2 + (el.lon - lng) ** 2;
+              if (d < bestDist && el.tags && el.tags.name) {
+                bestDist = d;
+                best = el;
+              }
+            });
+            return best ? best.tags.name : null;
+          }
+        } catch (err) {
+          console.error("Nearest-station lookup failed", err);
+        }
+        return null;
+      }
+
+      /* ---- railway-line routing: pull the actual rail tracks and shortest-path along them ---- */
+
+      function haversineMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(a));
+      }
+
+      function nodeKey(lat, lng) {
+        return `${lat.toFixed(6)},${lng.toFixed(6)}`;
+      }
+
+      /* a box around both stations, padded so the real track (which isn't a straight line) fits inside it */
+      function railBBox(fromPt, toPt) {
+        const latSpan = Math.abs(fromPt.lat - toPt.lat);
+        const lngSpan = Math.abs(fromPt.lng - toPt.lng);
+        const margin = Math.max(.08, .25 * Math.max(latSpan, lngSpan));
+        return {
+          south: Math.min(fromPt.lat, toPt.lat) - margin,
+          north: Math.max(fromPt.lat, toPt.lat) + margin,
+          west: Math.min(fromPt.lng, toPt.lng) - margin,
+          east: Math.max(fromPt.lng, toPt.lng) + margin
+        };
+      }
+
+      /* pulls every railway track segment inside the box */
+      async function fetchRailWays(bbox) {
+        const query = `[out:json][timeout:25];way["railway"="rail"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});out geom;`;
+        const res = await fetch(OVERPASS_URL, { method: "POST", body: query });
+        const data = await res.json();
+        return (data && data.elements) ? data.elements : [];
+      }
+
+      /* turns the track segments into a graph of junction points connected by track distance */
+      function buildRailGraph(ways) {
+        const graph = {};
+        const coordsByKey = {};
+
+        function addNode(lat, lng) {
+          const key = nodeKey(lat, lng);
+          if (!graph[key]) {
+            graph[key] = [];
+            coordsByKey[key] = [lat, lng];
+          }
+          return key;
+        }
+
+        ways.forEach(way => {
+          if (!way.geometry) return;
+          for (let i = 0; i < way.geometry.length - 1; i++) {
+            const a = way.geometry[i], b = way.geometry[i + 1];
+            const keyA = addNode(a.lat, a.lon);
+            const keyB = addNode(b.lat, b.lon);
+            const dist = haversineMeters(a.lat, a.lon, b.lat, b.lon);
+            graph[keyA].push({ to: keyB, dist });
+            graph[keyB].push({ to: keyA, dist });
+          }
+        });
+
+        return { graph, coordsByKey };
+      }
+
+      function nearestGraphNode(coordsByKey, lat, lng) {
+        let bestKey = null, bestDist = Infinity;
+        for (const key in coordsByKey) {
+          const [nlat, nlng] = coordsByKey[key];
+          const d = (nlat - lat) ** 2 + (nlng - lng) ** 2;
+          if (d < bestDist) {
+            bestDist = d;
+            bestKey = key;
+          }
+        }
+        return bestKey;
+      }
+
+      /* shortest path across the track network (small binary heap so it stays fast on bigger networks) */
+      function shortestRailPath(graph, startKey, endKey) {
+        const dist = { [startKey]: 0 };
+        const prev = {};
+        const visited = new Set();
+        const heap = [[0, startKey]];
+
+        function heapPush(item) {
+          heap.push(item);
+          let i = heap.length - 1;
+          while (i > 0) {
+            const p = (i - 1) >> 1;
+            if (heap[p][0] <= heap[i][0]) break;
+            [heap[p], heap[i]] = [heap[i], heap[p]];
+            i = p;
+          }
+        }
+        function heapPop() {
+          const top = heap[0];
+          const last = heap.pop();
+          if (heap.length) {
+            heap[0] = last;
+            let i = 0;
+            while (true) {
+              const l = 2 * i + 1, r = 2 * i + 2;
+              let smallest = i;
+              if (l < heap.length && heap[l][0] < heap[smallest][0]) smallest = l;
+              if (r < heap.length && heap[r][0] < heap[smallest][0]) smallest = r;
+              if (smallest === i) break;
+              [heap[smallest], heap[i]] = [heap[i], heap[smallest]];
+              i = smallest;
+            }
+          }
+          return top;
+        }
+
+        while (heap.length) {
+          const [d, u] = heapPop();
+          if (visited.has(u)) continue;
+          visited.add(u);
+          if (u === endKey) break;
+
+          (graph[u] || []).forEach(edge => {
+            const alt = d + edge.dist;
+            if (dist[edge.to] === undefined || alt < dist[edge.to]) {
+              dist[edge.to] = alt;
+              prev[edge.to] = u;
+              heapPush([alt, edge.to]);
+            }
+          });
+        }
+
+        if (dist[endKey] === undefined) return null; // stations aren't connected in the fetched network
+
+        const path = [];
+        let cur = endKey;
+        while (cur !== undefined) {
+          path.unshift(cur);
+          cur = prev[cur];
+        }
+        return path;
+      }
+
+      /* builds the on-map route by following the real railway line between the two stations */
+      async function fetchRoute(fromPt, toPt) {
+        try {
+          const bbox = railBBox(fromPt, toPt);
+          const ways = await fetchRailWays(bbox);
+          if (!ways.length) return null;
+
+          const { graph, coordsByKey } = buildRailGraph(ways);
+          const startKey = nearestGraphNode(coordsByKey, fromPt.lat, fromPt.lng);
+          const endKey = nearestGraphNode(coordsByKey, toPt.lat, toPt.lng);
+          if (!startKey || !endKey) return null;
+
+          const pathKeys = shortestRailPath(graph, startKey, endKey);
+          if (!pathKeys) return null;
+
+          return pathKeys.map(key => coordsByKey[key]);
+        } catch (err) {
+          console.error("Rail route lookup failed", err);
+          return null;
+        }
+      }
+
+      /* stitches rail routes leg-by-leg through an ordered list of {lat,lng} points (from -> stop -> stop -> ... -> to) */
+      async function fetchMultiLegRoute(points) {
+        let combined = [];
+        for (let i = 0; i < points.length - 1; i++) {
+          const legRoute = await fetchRoute(points[i], points[i + 1]);
+          const leg = legRoute || [[points[i].lat, points[i].lng], [points[i + 1].lat, points[i + 1].lng]];
+          // avoid duplicating the shared joint point between consecutive legs
+          combined = combined.concat(i === 0 ? leg : leg.slice(1));
+        }
+        return combined;
+      }
+
+      function initMap4() {
+        if (map4) return; // only set up the map once
+        map4 = L.map("map4", {
+          zoomControl: false,       // no +/- buttons
+          attributionControl: false, // no watermark text
+          maxBounds: BD_BOUNDS,
+          maxBoundsViscosity: 1.0,  // can't drag/pan past Bangladesh's borders
+          minZoom: 6                // can't zoom out far enough to see neighboring countries
+        });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19
+        }).addTo(map4);
+        map4.fitBounds(BD_BOUNDS); // default view before a route is loaded
+      }
+
+      /* index of the route point closest to the vehicle's current lat/lng */
+      function nearestIndexOnRoute(pos) {
+        let bestIdx = 0, bestDist = Infinity;
+        routeCoords.forEach((c, i) => {
+          const d = (c[0] - pos[0]) ** 2 + (c[1] - pos[1]) ** 2;
+          if (d < bestDist) {
+            bestDist = d;
+            bestIdx = i;
+          }
+        });
+        return bestIdx;
+      }
+
+      /* green = already crossed, orange = next half of what's left, blue = far half of what's left */
+      function drawProgressLines(vehiclePos) {
+        if (!routeCoords.length) return 0;
+        const crossedIdx = vehiclePos ? nearestIndexOnRoute(vehiclePos) : 0;
+
+        const crossedPart = routeCoords.slice(0, crossedIdx + 1);
+        const remaining = routeCoords.slice(crossedIdx);
+        const midIdx = Math.floor(remaining.length / 2);
+        const nextHalf = remaining.slice(0, midIdx + 1);
+        const farHalf = remaining.slice(midIdx);
+
+        if (greenLine) map4.removeLayer(greenLine);
+        if (orangeLine) map4.removeLayer(orangeLine);
+        if (blueLine) map4.removeLayer(blueLine);
+
+        greenLine = L.polyline(crossedPart, { color: "#22c55e", weight: 5, opacity: .9 }).addTo(map4);
+        orangeLine = L.polyline(nextHalf, { color: "#f97316", weight: 5, opacity: .9 }).addTo(map4);
+        blueLine = L.polyline(farHalf, { color: "#3b82f6", weight: 5, opacity: .9 }).addTo(map4);
+
+        return crossedIdx;
+      }
+
+      /* throttled reverse-geocode of the vehicle's own position (free API — don't hammer it) */
+      let lastPosLookup = 0;
+      async function updatePositionName(lat, lng) {
+        const now = Date.now();
+        if (now - lastPosLookup < 15000) return;
+        lastPosLookup = now;
+        try {
+          const res = await fetch(`${NOMINATIM_REVERSE_URL}?format=json&lat=${lat}&lon=${lng}`);
+          const data = await res.json();
+          const a = data.address || {};
+          posNameEl.innerText = a.village || a.town || a.city || a.county || "Unknown area";
+        } catch (err) {
+          console.error("Reverse geocode failed", err);
+        }
+      }
+
+      /* throttled look-ahead along the route for the next railway station; falls back to the destination */
+      let lastNextPlaceLookup = 0;
+      async function updateNextPlace(crossedIdx) {
+        const now = Date.now();
+        if (now - lastNextPlaceLookup < 20000) return;
+        lastNextPlaceLookup = now;
+
+        const remainingLen = routeCoords.length - crossedIdx;
+        const lookaheadFractions = [.05, .15, .3, .5];
+
+        for (const f of lookaheadFractions) {
+          const idx = Math.min(routeCoords.length - 1, crossedIdx + Math.floor(remainingLen * f));
+          const [lat, lng] = routeCoords[idx];
+          const station = await findNearestStation(lat, lng, 8000);
+          if (station) {
+            nextPlaceEl.innerText = station;
+            return;
+          }
+        }
+        nextPlaceEl.innerText = matchedTrain ? matchedTrain.to_station : "—";
+      }
+
+      function handleVehiclePosition(position) {
+        const { latitude, longitude, speed } = position.coords;
+        const pos = [latitude, longitude];
+
+        speedEl.innerText = speed ? `${(speed * 3.6).toFixed(1)} km/h` : "0 km/h";
+
+        if (!vehicleMarker) {
+          vehicleMarker = L.marker(pos).addTo(map4);
+        } else {
+          vehicleMarker.setLatLng(pos);
+        }
+
+        const crossedIdx = drawProgressLines(pos);
+        updatePositionName(latitude, longitude);
+        updateNextPlace(crossedIdx);
+      }
+
+      function handleVehiclePositionError(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+      }
+
+      function startVehicleTracking() {
+        if (watchId4 !== null) return; // already tracking
+        if (!navigator.geolocation) {
+          posNameEl.innerText = "Geolocation unsupported";
+          return;
+        }
+        watchId4 = navigator.geolocation.watchPosition(
+          handleVehiclePosition,
+          handleVehiclePositionError,
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      }
+
+      window.__initScreen4 = async function () {
+        initMap4();
+
+        posNameEl.innerText = "Locating…";
+        speedEl.innerText = "0 km/h";
+        nextPlaceEl.innerText = "Loading…";
+
+        if (!matchedTrain) return;
+
+        const fromName = matchedTrain.from_station;
+        const toName = matchedTrain.to_station;
+
+        // clear any stopage dots from a previous train before loading this one
+        stopMarkers.forEach(m => map4.removeLayer(m));
+        stopMarkers = [];
+
+        // try to get the full scheduled stopage list for this exact train name + number
+        const stopageNames = await findTrainStopages(matchedTrain.train_name, matchedTrain.train_number);
+
+        // station name list to route through: full stopage list if we have one, else just from/to as before
+        const stationNames = (stopageNames && stopageNames.length >= 2) ? stopageNames : [fromName, toName];
+
+        const geocoded = await Promise.all(stationNames.map(name => geocodePlace(name)));
+        const points = [];
+        const names = [];
+        geocoded.forEach((pt, i) => {
+          if (pt) { points.push(pt); names.push(stationNames[i]); }
+        });
+
+        if (points.length < 2) {
+          nextPlaceEl.innerText = "Could not load route";
+          return;
+        }
+
+        if (fromMarker) map4.removeLayer(fromMarker);
+        if (toMarker) map4.removeLayer(toMarker);
+
+        const fromPt = points[0], toPt = points[points.length - 1];
+        fromMarker = L.marker([fromPt.lat, fromPt.lng]).addTo(map4).bindPopup(names[0]);
+        toMarker = L.marker([toPt.lat, toPt.lng]).addTo(map4).bindPopup(names[names.length - 1]);
+
+        // small colored dots for every intermediate stopage between from and to
+        for (let i = 1; i < points.length - 1; i++) {
+          const color = STOPAGE_COLORS[(i - 1) % STOPAGE_COLORS.length];
+          const dot = L.circleMarker([points[i].lat, points[i].lng], {
+            radius: 6,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.9,
+            weight: 2
+          }).addTo(map4).bindPopup(names[i]);
+          stopMarkers.push(dot);
+        }
+
+        const route = points.length > 2 ? await fetchMultiLegRoute(points) : await fetchRoute(fromPt, toPt);
+        routeCoords = route || [[fromPt.lat, fromPt.lng], [toPt.lat, toPt.lng]];
+
+        map4.fitBounds(L.latLngBounds(routeCoords), { padding: [30, 30] });
+        drawProgressLines(null);
+        updateNextPlace(0);
+
+        startVehicleTracking();
+      };
+    })();
+  </script>
+</body>
+</html>
